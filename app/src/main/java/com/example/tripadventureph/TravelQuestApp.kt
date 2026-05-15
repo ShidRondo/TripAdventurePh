@@ -68,16 +68,18 @@ fun TravelQuestApp(
         composable(AppRoute.CompleteProfile.route) {
             CompleteProfileScreen(
                 repository = repository,
-                sessionManager = sessionManager
-            ) {
-                navController.navigate(AppRoute.MainShell.route) {
-                    popUpTo(0)
+                sessionManager = sessionManager,
+                onProfileComplete = {
+                    navController.navigate(AppRoute.MainShell.route) {
+                        popUpTo(0)
+                    }
                 }
-            }
+            )
         }
 
         composable(AppRoute.MainShell.route) {
             MainShellScreen(
+                repository = repository,
                 sessionManager = sessionManager,
                 onLogout = {
                     sessionManager.clear()

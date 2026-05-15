@@ -15,13 +15,42 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
+data class AchievementItem(
+    val title: String,
+    val description: String,
+    val progressText: String,
+    val unlocked: Boolean
+)
+
 @Composable
-fun AchievementsScreen(modifier: Modifier = Modifier) {
+fun AchievementsScreen(
+    modifier: Modifier = Modifier
+) {
     val achievements = listOf(
-        "Hike Master - Locked",
-        "Waterfall Expertise - Locked",
-        "Beach Explorer - Locked",
-        "Island Specialist - Locked",
+        AchievementItem(
+            title = "Hike Master",
+            description = "Complete major hiking destinations.",
+            progressText = "Progress: 0 / 5 hikes",
+            unlocked = false
+        ),
+        AchievementItem(
+            title = "Waterfall Expertise",
+            description = "Visit and verify waterfall destinations.",
+            progressText = "Progress: 0 / 5 falls",
+            unlocked = false
+        ),
+        AchievementItem(
+            title = "Beach Explorer",
+            description = "Check in at beach destinations.",
+            progressText = "Progress: 0 / 5 beaches",
+            unlocked = false
+        ),
+        AchievementItem(
+            title = "Island Specialist",
+            description = "Complete island-related travel goals.",
+            progressText = "Progress: 0 / 3 islands",
+            unlocked = false
+        )
     )
 
     LazyColumn(
@@ -38,9 +67,29 @@ fun AchievementsScreen(modifier: Modifier = Modifier) {
 
         items(achievements) { achievement ->
             Card(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(achievement, style = MaterialTheme.typography.titleMedium)
-                    Text("Progress tracking will be connected in the next phase.")
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Text(
+                        text = achievement.title,
+                        style = MaterialTheme.typography.titleMedium
+                    )
+
+                    Text(
+                        text = achievement.description,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+
+                    Text(
+                        text = achievement.progressText,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+
+                    Text(
+                        text = if (achievement.unlocked) "Status: Unlocked" else "Status: Locked",
+                        style = MaterialTheme.typography.bodySmall
+                    )
                 }
             }
         }

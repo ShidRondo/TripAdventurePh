@@ -10,18 +10,38 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import kotlin.concurrent.thread
 
 @Composable
-fun WalletScreen(modifier: Modifier = Modifier) {
+fun WalletScreen(
+    modifier: Modifier = Modifier,
+    repository: AuthRepository,
+    sessionManager: SessionManager
+) {
+    var walletSummary by remember { mutableStateOf(WalletSummary()) }
+    var loading by remember { mutableStateOf(true) }
+
+    LaunchedEffect(Unit) {
+        thread {
+            walletSummary = repository.fetchWalletSummary(
+                sessionManager.getAccessToken().orEmpty(),
+                sessionManager.getUserId().orEmpty()
+            )
+            loading = false
+        }
+    }
+
     val walletItems = listOf(
-        "In-App Balance: 1200 TRIPIX",
+        "In-App Available: ${walletSummary.availableBalance} TRIPIX",
+        "Locked Balance: ${walletSummary.lockedBalance} TRIPIX",
+        "Pending Balance: ${walletSummary.pendingBalance} TRIPIX",
         "On-Chain Balance: --",
         "TRIPIX Mint: configured later",
         "Network: Devnet",
-        "Withdrawal: coming soon",
+        "Withdrawal: coming soon"
     )
 
     LazyColumn(
@@ -36,12 +56,18 @@ fun WalletScreen(modifier: Modifier = Modifier) {
             )
         }
 
-        items(walletItems) { item ->
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = item,
-                    modifier = Modifier.padding(16.dp)
-                )
+        if (loading) {
+            item {
+                Text("Loading wallet...")
+            }
+        } else {
+            items(walletItems) { item ->
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = item,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
             }
         }
     }

@@ -15,13 +15,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
+data class DashboardStat(
+    val title: String,
+    val value: String
+)
+
 @Composable
-fun HomeDashboardScreen(modifier: Modifier = Modifier) {
+fun HomeDashboardScreen(
+    modifier: Modifier = Modifier
+) {
     val quickStats = listOf(
-        "In-App TRIPIX Balance: 1200",
-        "Visited Places: 0",
-        "Unlocked Badges: 0",
-        "Joined Events: 0"
+        DashboardStat("In-App TRIPIX Balance", "1200"),
+        DashboardStat("Visited Places", "0"),
+        DashboardStat("Unlocked Badges", "0"),
+        DashboardStat("Joined Events", "0")
     )
 
     LazyColumn(
@@ -38,22 +45,53 @@ fun HomeDashboardScreen(modifier: Modifier = Modifier) {
 
         items(quickStats) { stat ->
             Card(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = stat,
-                    modifier = Modifier.padding(16.dp),
-                    style = MaterialTheme.typography.bodyLarge
-                )
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = stat.title,
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Text(
+                        text = stat.value,
+                        style = MaterialTheme.typography.headlineSmall
+                    )
+                }
             }
         }
 
         item {
             Card(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text("Quick Actions", style = MaterialTheme.typography.titleMedium)
-                    Text("• Check in to a destination")
-                    Text("• Explore places")
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Text(
+                        text = "Quick Actions",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Text("• Explore destinations")
+                    Text("• Submit a check-in")
+                    Text("• Create a feed post")
                     Text("• View wallet")
-                    Text("• Complete profile details")
+                    Text("• Update profile")
+                }
+            }
+        }
+
+        item {
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Text(
+                        text = "Status",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Text("Auth flow: Ready")
+                    Text("Destinations: Connected")
+                    Text("Check-In: Basic submission ready")
+                    Text("Feed: Basic create/load/delete ready")
+                    Text("Profile: Editable")
                 }
             }
         }

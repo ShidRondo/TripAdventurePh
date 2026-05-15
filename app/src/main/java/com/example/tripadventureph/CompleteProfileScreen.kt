@@ -45,7 +45,10 @@ fun CompleteProfileScreen(
             .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Text("Complete Profile", style = MaterialTheme.typography.headlineSmall)
+        Text(
+            text = "Complete Profile",
+            style = MaterialTheme.typography.headlineSmall
+        )
 
         OutlinedTextField(
             value = fullName,
@@ -53,48 +56,56 @@ fun CompleteProfileScreen(
             label = { Text("Display Name") },
             modifier = Modifier.fillMaxWidth()
         )
+
         OutlinedTextField(
             value = bio,
             onValueChange = { bio = it },
             label = { Text("Bio") },
             modifier = Modifier.fillMaxWidth()
         )
+
         OutlinedTextField(
             value = contactNumber,
             onValueChange = { contactNumber = it },
             label = { Text("Contact Number") },
             modifier = Modifier.fillMaxWidth()
         )
+
         OutlinedTextField(
             value = country,
             onValueChange = { country = it },
             label = { Text("Country") },
             modifier = Modifier.fillMaxWidth()
         )
+
         OutlinedTextField(
             value = region,
             onValueChange = { region = it },
             label = { Text("Region") },
             modifier = Modifier.fillMaxWidth()
         )
+
         OutlinedTextField(
             value = municipality,
             onValueChange = { municipality = it },
             label = { Text("Municipality") },
             modifier = Modifier.fillMaxWidth()
         )
+
         OutlinedTextField(
             value = barangay,
             onValueChange = { barangay = it },
             label = { Text("Barangay") },
             modifier = Modifier.fillMaxWidth()
         )
+
         OutlinedTextField(
             value = zipCode,
             onValueChange = { zipCode = it },
             label = { Text("ZIP Code") },
             modifier = Modifier.fillMaxWidth()
         )
+
         OutlinedTextField(
             value = walletAddress,
             onValueChange = { walletAddress = it },
@@ -122,14 +133,12 @@ fun CompleteProfileScreen(
                         walletAddress = walletAddress
                     )
 
-                    android.os.Handler(android.os.Looper.getMainLooper()).post {
-                        loading = false
-                        message = result.message
+                    loading = false
+                    message = result.message
 
-                        if (result.success) {
-                            sessionManager.saveProfileComplete(true)
-                            onProfileComplete()
-                        }
+                    if (result.success) {
+                        sessionManager.saveProfileComplete(true)
+                        onProfileComplete()
                     }
                 }
             },
@@ -140,7 +149,10 @@ fun CompleteProfileScreen(
         }
 
         if (message.isNotBlank()) {
-            Text(message, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(
+                text = message,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }

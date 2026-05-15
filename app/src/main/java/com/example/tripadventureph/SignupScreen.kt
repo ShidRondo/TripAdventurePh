@@ -1,7 +1,17 @@
 package com.example.tripadventureph
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,7 +44,10 @@ fun SignupScreen(
                 modifier = Modifier.padding(20.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text("Sign Up", style = MaterialTheme.typography.headlineSmall)
+                Text(
+                    text = "Sign Up",
+                    style = MaterialTheme.typography.headlineSmall
+                )
 
                 OutlinedTextField(
                     value = fullName,
@@ -64,15 +77,16 @@ fun SignupScreen(
                         message = ""
 
                         thread {
-                            val result = repository.signUp(fullName, email, password)
-                            
-                            android.os.Handler(android.os.Looper.getMainLooper()).post {
-                                loading = false
-                                message = result.message
+                            val result = repository.signUp(
+                                fullName = fullName,
+                                email = email,
+                                password = password
+                            )
+                            loading = false
+                            message = result.message
 
-                                if (result.success) {
-                                    onSignupSuccess()
-                                }
+                            if (result.success) {
+                                onSignupSuccess()
                             }
                         }
                     },
@@ -90,7 +104,10 @@ fun SignupScreen(
                 }
 
                 if (message.isNotBlank()) {
-                    Text(message, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(
+                        text = message,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
         }

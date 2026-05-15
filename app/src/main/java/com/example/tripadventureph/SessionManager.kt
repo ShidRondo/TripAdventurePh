@@ -20,13 +20,19 @@ class SessionManager(context: Context) {
     }
 
     fun saveProfileComplete(value: Boolean) {
-        prefs.edit().putBoolean("profile_complete", value).apply()
+        prefs.edit()
+            .putBoolean("profile_complete", value)
+            .apply()
     }
 
     fun getAccessToken(): String? = prefs.getString("access_token", null)
+
     fun getUserId(): String? = prefs.getString("user_id", null)
+
     fun getEmail(): String? = prefs.getString("email", null)
+
     fun isProfileComplete(): Boolean = prefs.getBoolean("profile_complete", false)
+
     fun isLoggedIn(): Boolean = !getAccessToken().isNullOrBlank()
 
     fun clear() {

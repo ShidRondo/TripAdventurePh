@@ -11,25 +11,32 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-
-data class SampleDestination(
-    val name: String,
-    val category: String,
-    val location: String,
-    val difficulty: String,
-    val reward: Int,
-)
+import kotlin.concurrent.thread
 
 @Composable
-fun DiscoverScreen(modifier: Modifier = Modifier) {
-    val destinations = listOf(
-        SampleDestination("Osmeña Peak", "Hiking", "Dalaguete, Cebu", "Moderate", 30),
-        SampleDestination("Kawasan Falls", "Falls", "Badian, Cebu", "Easy", 25),
-        SampleDestination("Basdaku Beach", "Beach", "Moalboal, Cebu", "Easy", 20)
-    )
+fun DiscoverScreen(
+    modifier: Modifier = Modifier,
+    repository: AuthRepository,
+    sessionManager: SessionManager
+) {
+    var destinations by remember { mutableStateOf<List<Destination>>(emptyList()) }
+    var loading by remember { mutableStateOf(true) }
+    var message by remember { mutableStateOf("") }
+
+    LaunchedEffect(Unit) {
+        thread {
+            val accessToken = sessionManager.getAccessToken().orEmpty()
+            val result = repository.fetchDestinations(accessToken)
+            destinations = result
+            loading = false
+            if (result.isEmpty()) {
+                message = "No destinations found."
+            }
+        }
+    }
 
     LazyColumn(
         modifier = modifier.fillMaxSize(),
@@ -43,14 +50,36 @@ fun DiscoverScreen(modifier: Modifier = Modifier) {
             )
         }
 
-        items(destinations) { destination ->
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(destination.name, style = MaterialTheme.typography.titleMedium)
-                    Text("Category: ${destination.category}")
-                    Text("Location: ${destination.location}")
-                    Text("Difficulty: ${destination.difficulty}")
-                    Text("Reward: ${destination.reward} TRIPIX")
+        if (loading) {
+            item {
+                Text("Loading destinations...")
+            }
+        } else {
+            if (message.isNotBlank()) {
+                item {
+                    Text(message)
+                }
+            }
+
+            items(destinations) { destination ->
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = destination.name,
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Text("Category: ${destination.category}")
+                        Text("Location: ${destination.location}")
+                        Text("Difficulty: ${destination.difficulty}")
+                        Text("Reward: ${destination.rewardPoints} TRIPIX")
+
+                        if (destination.description.isNotBlank()) {
+                            Text(
+                                text = destination.description,
+                                modifier = Modifier.padding(top = 8.dp)
+                            )
+                        }
+                    }
                 }
             }
         }

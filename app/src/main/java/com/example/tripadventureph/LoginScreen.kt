@@ -44,7 +44,10 @@ fun LoginScreen(
                 modifier = Modifier.padding(20.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text("Login", style = MaterialTheme.typography.headlineSmall)
+                Text(
+                    text = "Login",
+                    style = MaterialTheme.typography.headlineSmall
+                )
 
                 OutlinedTextField(
                     value = email,
@@ -68,21 +71,22 @@ fun LoginScreen(
 
                         thread {
                             val result = repository.login(email, password)
+                            loading = false
+                            message = result.message
 
-                            // Move state updates and navigation back to the main thread
-                            android.os.Handler(android.os.Looper.getMainLooper()).post {
-                                loading = false
-                                message = result.message
-
-                                if (result.success && result.accessToken != null && result.userId != null && result.email != null) {
-                                    sessionManager.saveSession(
-                                        accessToken = result.accessToken,
-                                        userId = result.userId,
-                                        email = result.email,
-                                        profileComplete = result.profileComplete
-                                    )
-                                    onLoginSuccess(result.profileComplete)
-                                }
+                            if (
+                                result.success &&
+                                result.accessToken != null &&
+                                result.userId != null &&
+                                result.email != null
+                            ) {
+                                sessionManager.saveSession(
+                                    accessToken = result.accessToken,
+                                    userId = result.userId,
+                                    email = result.email,
+                                    profileComplete = result.profileComplete
+                                )
+                                onLoginSuccess(result.profileComplete)
                             }
                         }
                     },
@@ -100,7 +104,10 @@ fun LoginScreen(
                 }
 
                 if (message.isNotBlank()) {
-                    Text(message, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(
+                        text = message,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
         }
