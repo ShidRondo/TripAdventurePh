@@ -5,6 +5,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Article
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.DirectionsWalk
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.Home
@@ -25,6 +26,7 @@ enum class MainTab(val label: String) {
     Discover("Discover"),
     CheckIn("Check-In"),
     CheckInAdvanced("Track"),
+    Hiking("Hike"),
     Wallet("Wallet"),
     Achievements("Achievements"),
     Events("Events"),
@@ -53,6 +55,7 @@ fun MainShellScreen(
                                 MainTab.Discover -> Icons.Default.Explore
                                 MainTab.CheckIn -> Icons.Default.CameraAlt
                                 MainTab.CheckInAdvanced -> Icons.Default.Map
+                                MainTab.Hiking -> Icons.Default.DirectionsWalk
                                 MainTab.Wallet -> Icons.Default.Wallet
                                 MainTab.Achievements -> Icons.Default.MilitaryTech
                                 MainTab.Events -> Icons.Default.Event
@@ -90,7 +93,15 @@ fun MainShellScreen(
             )
 
             MainTab.CheckInAdvanced -> CheckInAdvancedScreen(
-                modifier = Modifier.padding(innerPadding)
+                modifier = Modifier.padding(innerPadding),
+                repository = repository,
+                sessionManager = sessionManager
+            )
+
+            MainTab.Hiking -> HikingScreen(
+                modifier = Modifier.padding(innerPadding),
+                repository = repository,
+                sessionManager = sessionManager
             )
 
             MainTab.Wallet -> WalletScreen(
@@ -104,7 +115,9 @@ fun MainShellScreen(
             )
 
             MainTab.Events -> EventsScreen(
-                modifier = Modifier.padding(innerPadding)
+                modifier = Modifier.padding(innerPadding),
+                repository = repository,
+                sessionManager = sessionManager
             )
 
             MainTab.Profile -> ProfileScreen(

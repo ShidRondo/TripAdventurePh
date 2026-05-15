@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -23,15 +24,27 @@ fun WalletScreen(
 ) {
     var walletSummary by remember { mutableStateOf(WalletSummary()) }
     var loading by remember { mutableStateOf(true) }
+    var message by remember { mutableStateOf("") }
 
-    LaunchedEffect(Unit) {
+    val accessToken = sessionManager.getAccessToken().orEmpty()
+    val userId = sessionManager.getUserId().orEmpty()
+
+    fun loadWallet() {
+        loading = true
+        message = ""
+
         thread {
-            walletSummary = repository.fetchWalletSummary(
-                sessionManager.getAccessToken().orEmpty(),
-                sessionManager.getUserId().orEmpty()
+            val result = repository.fetchWalletSummary(
+                accessToken = accessToken,
+                userId = userId
             )
+            walletSummary = result
             loading = false
         }
+    }
+
+    LaunchedEffect(Unit) {
+        loadWallet()
     }
 
     val walletItems = listOf(
@@ -54,6 +67,22 @@ fun WalletScreen(
                 text = "Wallet",
                 style = MaterialTheme.typography.headlineSmall
             )
+        }
+
+        item {
+            Button(
+                onClick = { loadWallet() },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !loading
+            ) {
+                Text(if (loading) "Refreshing..." else "Refresh Wallet")
+            }
+        }
+
+        if (message.isNotBlank()) {
+            item {
+                Text(message)
+            }
         }
 
         if (loading) {

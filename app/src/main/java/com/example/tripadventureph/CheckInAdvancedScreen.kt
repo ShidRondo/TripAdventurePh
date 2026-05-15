@@ -57,13 +57,18 @@ data class RoutePoint(
 @SuppressLint("MissingPermission")
 @Composable
 fun CheckInAdvancedScreen(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    repository: AuthRepository,
+    sessionManager: SessionManager
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val fusedLocationClient = remember {
         LocationServices.getFusedLocationProviderClient(context)
     }
+
+    val accessToken = sessionManager.getAccessToken().orEmpty()
+    val userId = sessionManager.getUserId().orEmpty()
 
     var hasLocationPermission by remember {
         mutableStateOf(
@@ -96,6 +101,8 @@ fun CheckInAdvancedScreen(
     }
 
     var capturedImageUri by remember { mutableStateOf<Uri?>(null) }
+    var uploadedImageUrl by remember { mutableStateOf<String?>(null) }
+    var uploadingPhoto by remember { mutableStateOf(false) }
 
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicturePreview()
@@ -123,6 +130,7 @@ fun CheckInAdvancedScreen(
     var photoAttached by remember { mutableStateOf(false) }
     var proofMetadata by remember { mutableStateOf("") }
     var statusMessage by remember { mutableStateOf("") }
+    var submitting by remember { mutableStateOf(false) }
 
     val routePoints = remember { mutableStateListOf<RoutePoint>() }
 
@@ -226,6 +234,15 @@ fun CheckInAdvancedScreen(
         destinationReached = distanceToTarget <= targetRadiusMeters
     }
 
+    LaunchedEffect(capturedImageUri) {
+        if (capturedImageUri != null) {
+            photoAttached = true
+            proofMetadata =
+                "destination=$destinationName;lat=$currentLat;lng=$currentLng;points=${routePoints.size};imageUri=$capturedImageUri;time=${System.currentTimeMillis()}"
+            statusMessage = "Proof photo captured."
+        }
+    }
+
     DisposableEffect(hasLocationPermission, tracking) {
         if (hasLocationPermission && tracking) {
             fusedLocationClient.requestLocationUpdates(
@@ -294,6 +311,7 @@ fun CheckInAdvancedScreen(
                 Text("Start Verified: ${if (startVerified) "Yes" else "No"}")
                 Text("Destination Reached: ${if (destinationReached) "Yes" else "No"}")
                 Text("Photo Attached: ${if (photoAttached) "Yes" else "No"}")
+                Text("Photo Uploaded: ${if (uploadedImageUrl != null) "Yes" else "No"}")
                 Text("Tracking: ${if (tracking) "Active" else "Stopped"}")
             }
         }
@@ -446,13 +464,45 @@ fun CheckInAdvancedScreen(
                 }
             }
 
-            LaunchedEffect(capturedImageUri) {
-                if (capturedImageUri != null) {
-                    photoAttached = true
-                    proofMetadata =
-                        "destination=$destinationName;lat=$currentLat;lng=$currentLng;points=${routePoints.size};imageUri=$capturedImageUri;time=${System.currentTimeMillis()}"
-                    statusMessage = "Proof photo captured."
-                }
+            Button(
+                onClick = {
+                    val uri = capturedImageUri ?: return@Button
+                    uploadingPhoto = true
+                    statusMessage = "Uploading proof photo..."
+
+                    kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+                        val uploadedUrl = repository.uploadProofImage(
+                            accessToken = accessToken,
+                            userId = userId,
+                            imageUri = uri
+                        )
+
+                        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                            uploadedImageUrl = uploadedUrl
+                            uploadingPhoto = false
+                            statusMessage = if (uploadedUrl != null) {
+                                proofMetadata =
+                                    "destination=$destinationName;lat=$currentLat;lng=$currentLng;points=${routePoints.size};imageUrl=$uploadedUrl;time=${System.currentTimeMillis()}"
+                                "Proof photo uploaded."
+                            } else {
+                                "Failed to upload proof photo."
+                            }
+                        }
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !uploadingPhoto && uploadedImageUrl == null
+            ) {
+                Text(if (uploadingPhoto) "Uploading..." else "Upload Proof Photo")
+            }
+        }
+
+        if (uploadedImageUrl != null) {
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = "Uploaded URL: $uploadedImageUrl",
+                    modifier = Modifier.padding(16.dp)
+                )
             }
         }
 
@@ -468,15 +518,42 @@ fun CheckInAdvancedScreen(
                 statusMessage = when {
                     destinationName.isBlank() -> "Destination is required."
                     !startVerified -> "User must begin inside the start geofence."
-                    !photoAttached -> "Photo proof is required."
+                    capturedImageUri == null -> "Photo proof is required."
+                    uploadedImageUrl == null -> "Upload the proof photo first."
                     !destinationReached -> "Target geofence has not been reached yet."
                     routePoints.isEmpty() -> "No tracked route found."
-                    else -> "Advanced check-in verified and ready for reward."
+                    else -> {
+                        submitting = true
+                        "Submitting advanced check-in..."
+                    }
+                }
+
+                if (submitting) {
+                    kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+                        val result = repository.submitAdvancedCheckIn(
+                            accessToken = accessToken,
+                            userId = userId,
+                            destinationName = destinationName,
+                            currentLat = currentLat,
+                            currentLng = currentLng,
+                            routePointCount = routePoints.size,
+                            proofImageUrl = uploadedImageUrl,
+                            proofMetadata = proofMetadata,
+                            startVerified = startVerified,
+                            destinationReached = destinationReached
+                        )
+
+                        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                            statusMessage = result.message
+                            submitting = false
+                        }
+                    }
                 }
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !submitting
         ) {
-            Text("Submit Advanced Check-In")
+            Text(if (submitting) "Submitting..." else "Submit Advanced Check-In")
         }
 
         if (statusMessage.isNotBlank()) {
