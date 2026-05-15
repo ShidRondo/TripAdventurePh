@@ -1,4 +1,4 @@
-package com.example.travelquest
+package com.example.tripadventureph
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -65,11 +65,14 @@ fun SignupScreen(
 
                         thread {
                             val result = repository.signUp(fullName, email, password)
-                            loading = false
-                            message = result.message
+                            
+                            android.os.Handler(android.os.Looper.getMainLooper()).post {
+                                loading = false
+                                message = result.message
 
-                            if (result.success) {
-                                onSignupSuccess()
+                                if (result.success) {
+                                    onSignupSuccess()
+                                }
                             }
                         }
                     },

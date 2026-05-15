@@ -1,4 +1,4 @@
-package com.example.travelquest
+package com.example.tripadventureph
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*

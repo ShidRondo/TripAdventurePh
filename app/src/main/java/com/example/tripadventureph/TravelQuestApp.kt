@@ -9,18 +9,18 @@ sealed class AppRoute(val route: String) {
     data object Login : AppRoute("login")
     data object Signup : AppRoute("signup")
     data object CompleteProfile : AppRoute("complete_profile")
-    data object Home : AppRoute("home")
+    data object MainShell : AppRoute("main_shell")
 }
 
 @Composable
 fun TravelQuestApp(
     repository: AuthRepository,
-    sessionManager: SessionManager
+    sessionManager: SessionManager,
 ) {
     val navController = rememberNavController()
 
     val startDestination = if (sessionManager.isLoggedIn()) {
-        if (sessionManager.isProfileComplete()) AppRoute.Home.route
+        if (sessionManager.isProfileComplete()) AppRoute.MainShell.route
         else AppRoute.CompleteProfile.route
     } else {
         AppRoute.Login.route
@@ -28,13 +28,13 @@ fun TravelQuestApp(
 
     NavHost(
         navController = navController,
-        startDestination = startDestination
+        startDestination = startDestination,
     ) {
         composable(AppRoute.Login.route) {
             LoginScreen(
                 onLoginSuccess = { profileComplete ->
                     if (profileComplete) {
-                        navController.navigate(AppRoute.Home.route) {
+                        navController.navigate(AppRoute.MainShell.route) {
                             popUpTo(0)
                         }
                     } else {
@@ -68,17 +68,16 @@ fun TravelQuestApp(
         composable(AppRoute.CompleteProfile.route) {
             CompleteProfileScreen(
                 repository = repository,
-                sessionManager = sessionManager,
-                onProfileComplete = {
-                    navController.navigate(AppRoute.Home.route) {
-                        popUpTo(0)
-                    }
+                sessionManager = sessionManager
+            ) {
+                navController.navigate(AppRoute.MainShell.route) {
+                    popUpTo(0)
                 }
-            )
+            }
         }
 
-        composable(AppRoute.Home.route) {
-            HomeScreen(
+        composable(AppRoute.MainShell.route) {
+            MainShellScreen(
                 sessionManager = sessionManager,
                 onLogout = {
                     sessionManager.clear()

@@ -122,12 +122,14 @@ fun CompleteProfileScreen(
                         walletAddress = walletAddress
                     )
 
-                    loading = false
-                    message = result.message
+                    android.os.Handler(android.os.Looper.getMainLooper()).post {
+                        loading = false
+                        message = result.message
 
-                    if (result.success) {
-                        sessionManager.saveProfileComplete(true)
-                        onProfileComplete()
+                        if (result.success) {
+                            sessionManager.saveProfileComplete(true)
+                            onProfileComplete()
+                        }
                     }
                 }
             },
